@@ -50,14 +50,12 @@ struct YamlWriter {
 		std::vector<typename ArchType::FrameAddress> frame_addresses;
 		absl::optional<uint32_t> idcode;
 		for (auto packet : *reader) {
-			std::cerr << packet.opcode() << std::endl;
 			if (packet.opcode() !=
 			    xilinx::ConfigurationPacket<
 			        typename ArchType::ConfRegType>::Opcode::Write) {
 				continue;
 			}
 
-			std::cerr << packet.address() << " " << packet.data().size() << std::endl;
 			if (packet.address() == ArchType::ConfRegType::FDRI) {
 				found_fdri_write = true;
 			} else if ((packet.address() == ArchType::ConfRegType::IDCODE) &&
@@ -117,7 +115,6 @@ int main(int argc, char* argv[]) {
 	auto in_bytes = absl::Span<uint8_t>(
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
 
-	std::cerr << FLAGS_architecture << std::endl;
 	try {
 		xilinx::Architecture::Container arch_container =
 		    xilinx::ArchitectureFactory::create_architecture(
