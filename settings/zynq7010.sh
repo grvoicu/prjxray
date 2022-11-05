@@ -8,6 +8,7 @@ export XRAY_DATABASE="zynq7"
 # SPDX-License-Identifier: ISC
 export XRAY_PART="xc7z010clg400-1"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
+export XRAY_ARCH="Series7"
 
 # All CLB's in part, all BRAM's in part, all DSP's in part.
 export XRAY_ROI_TILEGRID="SLICE_X0Y0:SLICE_X43Y99 RAMB18_X0Y0:RAMB18_X2Y39 RAMB36_X0Y0:RAMB36_X2Y19 DSP48_X0Y0:DSP48_X1Y39"

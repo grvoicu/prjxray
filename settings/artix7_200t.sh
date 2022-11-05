@@ -8,6 +8,7 @@
 export XRAY_DATABASE="artix7"
 export XRAY_PART="xc7a200tffg1156-1"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
+export XRAY_ARCH="Series7"
 
 # All CLB's in part, all BRAM's in part, all DSP's in part.
 # tcl queries IOB => don't bother adding

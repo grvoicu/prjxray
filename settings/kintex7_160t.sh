@@ -8,6 +8,7 @@
 export XRAY_DATABASE="kintex7"
 export XRAY_PART="xc7k160tffg676-2"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
+export XRAY_ARCH="Series7"
 
 # All CLB's in the part, all BRAM's in the part, all DSP's in the part.
 # those are site coordinats: bottom half rectangle / top half rectangle for each site type
