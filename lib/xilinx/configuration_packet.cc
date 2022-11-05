@@ -96,7 +96,7 @@ ConfigurationPacket<Spartan6ConfigurationRegister>::InitWithWords(
 		case NONE:
 			// Type 0 is emitted at the end of a configuration row
 			// when BITSTREAM.GENERAL.DEBUGBITSTREAM is set to YES.
-			// These seem to be padding that are interepreted as
+			// These seem to be padding that are interpreted as
 			// NOPs.  Since Type 0 packets don't exist according to
 			// UG470 and they seem to be zero-filled, just consume
 			// the bytes without generating a packet.
@@ -173,7 +173,7 @@ ConfigurationPacket<Series7ConfigurationRegister>::InitWithWords(
 		case NONE:
 			// Type 0 is emitted at the end of a configuration row
 			// when BITSTREAM.GENERAL.DEBUGBITSTREAM is set to YES.
-			// These seem to be padding that are interepreted as
+			// These seem to be padding that are interpreted as
 			// NOPs.  Since Type 0 packets don't exist according to
 			// UG470 and they seem to be zero-filled, just consume
 			// the bytes without generating a packet.

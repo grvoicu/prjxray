@@ -38,7 +38,7 @@ class Configuration {
 
 	// Creates the complete configuration package which is later on
 	// used by the bitstream writer to generate the bitstream file.
-	// The pacakge forms a sequence suitable for Xilinx devices.
+	// The package forms a sequence suitable for Xilinx devices.
 	// The programming sequence for Series-7 is taken from
 	// https://www.kc8apf.net/2018/05/unpacking-xilinx-7-series-bitstreams-part-2/
 	static void createConfigurationPackage(
@@ -317,7 +317,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 				}
 
 				// Number of words in configuration frames
-				// depend on tje architecture.  Writes to this
+				// depend on the architecture.  Writes to this
 				// register can be multiples of that number to
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();

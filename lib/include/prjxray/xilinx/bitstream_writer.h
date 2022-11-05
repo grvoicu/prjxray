@@ -157,7 +157,7 @@ int BitstreamWriter<ArchType>::writeBitstream(
     const std::string& output_file) {
 	std::ofstream out_file(output_file, std::ofstream::binary);
 	if (!out_file) {
-		std::cerr << "Unable to open file for writting: " << output_file
+		std::cerr << "Unable to open file for writing: " << output_file
 		          << std::endl;
 		return 1;
 	}
