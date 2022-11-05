@@ -36,6 +36,8 @@ uint32_t packet2header(
     const ConfigurationPacket<Series7ConfigurationRegister>& packet);
 uint32_t packet2header(
     const ConfigurationPacket<Spartan6ConfigurationRegister>& packet);
+uint32_t packet2header(
+	const ConfigurationPacket<Spartan3ConfigurationRegister> &packet);
 // Writes out the complete Xilinx bitstream including
 // header, sync word and configuration sequence.
 template <typename ArchType>

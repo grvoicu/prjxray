@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: ISC
  */
 #include <prjxray/xilinx/frames.h>
+#include <prjxray/xilinx/spartan3/ecc.h>
 #include <prjxray/xilinx/xc7series/ecc.h>
 
 namespace prjxray {
@@ -32,6 +33,11 @@ void Frames<UltraScalePlus>::updateECC(
 // Spartan6 doesn't have ECC
 template <>
 void Frames<Spartan6>::updateECC(typename Frames<Spartan6>::FrameData& data) {}
+
+template <>
+void Frames<Spartan3>::updateECC(typename Frames<Spartan3>::FrameData &data) {
+  spartan3::updateECC(data);
+}
 
 }  // namespace xilinx
 }  // namespace prjxray

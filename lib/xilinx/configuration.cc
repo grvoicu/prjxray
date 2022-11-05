@@ -20,12 +20,135 @@
 #include <prjxray/xilinx/configuration.h>
 #include <prjxray/xilinx/configuration_packet_with_payload.h>
 #include <prjxray/xilinx/nop_packet.h>
+#include <prjxray/xilinx/spartan3/command.h>
+#include <prjxray/xilinx/spartan3/configuration_options_value.h>
 #include <prjxray/xilinx/spartan6/command.h>
 #include <prjxray/xilinx/xc7series/command.h>
 #include <prjxray/xilinx/xc7series/configuration_options_0_value.h>
 
 namespace prjxray {
 namespace xilinx {
+
+// According to XAPP452, pg. 11
+template <>
+void Configuration<Spartan3>::createConfigurationPackage(
+    Spartan3::ConfigurationPackage &out_packets, const PacketData &packet_data,
+    absl::optional<Spartan3::Part> &part) {
+  using ArchType = Spartan3;
+  using ConfigurationRegister = ArchType::ConfRegType;
+  // Initialization sequence
+//   out_packets.emplace_back(
+//       new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+//           ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+//           ConfigurationRegister::CMD,
+//           {static_cast<uint32_t>(spartan3::Command::NOP)}));
+    out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(spartan3::Command::RCRC)}));
+
+  // Write FLR
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::FLR, {ArchType::words_per_frame}));
+
+  // Configuration Options
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::COR,
+          {spartan3::ConfigurationOptionsValue()
+               // TODO: Set this to default, i.e. CCLK
+               .SetStartupClockSource(
+                   spartan3::ConfigurationOptionsValue::StartupClockSource::
+                       JTAG)
+               .SetReleaseDonePinAtStartupCycle(
+                   spartan3::ConfigurationOptionsValue::SignalReleaseCycle::
+                       Phase4)
+               .SetStallAtStartupCycleUntilDciMatch(
+                   spartan3::ConfigurationOptionsValue::StallCycle::NoWait)
+               .SetStallAtStartupCycleUntilMmcmLock(
+                   spartan3::ConfigurationOptionsValue::StallCycle::NoWait)
+               .SetReleaseGtsSignalAtStartupCycle(
+                   spartan3::ConfigurationOptionsValue::SignalReleaseCycle::
+                       Phase5)
+               .SetReleaseGweSignalAtStartupCycle(
+                   spartan3::ConfigurationOptionsValue::SignalReleaseCycle::
+                       Phase6)}));
+
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::IDCODE, {part->idcode()}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::MASK, {0x0}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD, 
+          {static_cast<uint32_t>(spartan3::Command::SWITCH)}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::FAR, {0x0}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(spartan3::Command::WCFG)}));
+  out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+
+  // Frame data write
+  out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
+      TYPE1, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+      ConfigurationRegister::FDRI, {}));
+  out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
+      TYPE2, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+      ConfigurationRegister::FDRI, packet_data));
+
+  // Finalize configuration sequence
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(spartan3::Command::GRESTORE)}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(xc7series::Command::LFRM)}));
+  for (int ii = 0; ii < ArchType::words_per_frame; ++ii) {
+    out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+  }
+
+  // Start-up sequence
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(xc7series::Command::START)}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CTL, {0x0}));
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CRC, {}));
+  out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+  out_packets.emplace_back(
+      new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+          ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+          ConfigurationRegister::CMD,
+          {static_cast<uint32_t>(spartan3::Command::DESYNC)}));
+  for (int ii = 0; ii < 4; ++ii) {
+    out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+  }
+}
 
 template <>
 Configuration<Spartan6>::PacketData
@@ -297,6 +420,7 @@ void Configuration<Spartan6>::createConfigurationPackage(
 	}
 }
 
+// According to UG470, pg. 97
 template <>
 void Configuration<Series7>::createConfigurationPackage(
     Series7::ConfigurationPackage& out_packets,
