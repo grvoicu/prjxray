@@ -14,7 +14,7 @@ ConfigurationColumn::GetNextFrameAddress(FrameAddress address) const {
     return {};
 
   if (static_cast<unsigned int>(address.minor() + 1) < frame_count_) {
-    return address + 1;
+    return address + 0x200; // the next minor address, bits 8:0 are always 0
   }
 
   // Next address is not in this column.
