@@ -117,6 +117,7 @@ Configuration<Spartan3>::InitWithPackets(const typename Spartan3::Part& part,
 
 	// Internal state machine for writes.
 	bool start_new_write = false;
+	bool last_frame = false;
 	typename ArchType::FrameAddress current_frame_address = 0;
 
 	Configuration<ArchType>::FrameMap frames;
@@ -169,13 +170,20 @@ Configuration<Spartan3>::InitWithPackets(const typename Spartan3::Part& part,
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();
 				     ii += ArchType::words_per_frame) {
-					frames[current_frame_address] =
-					    packet.data().subspan(ii, ArchType::words_per_frame);
+					// XAPP425, pg.3 states that the last frame is a pad frame
+					// with dummy data, so we ignore it.
+					if (last_frame)
+						break;
+
+					frames[current_frame_address] = packet.data().subspan(
+						ii, ArchType::words_per_frame);
 
 					auto next_address =
 					    part.GetNextFrameAddress(current_frame_address);
-					if (!next_address)
+					if (!next_address) {
+						last_frame = true;
 						break;
+					}
 					
 					current_frame_address = *next_address;
 				}
