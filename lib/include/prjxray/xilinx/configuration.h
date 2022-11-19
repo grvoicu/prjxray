@@ -378,7 +378,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 
 				// Per UG470, the command present in the CMD
 				// register is executed each time the FAR
-				// register is laoded with a new value.  As we
+				// register is loaded with a new value.  As we
 				// only care about WCFG commands, just check
 				// that here.  CTRL1 is completely undocumented
 				// but looking at generated bitstreams, bit 21
