@@ -6,5 +6,11 @@
 #
 # SPDX-License-Identifier: ISC
 N ?= 30
+ifeq (${XRAY_ARCH}, Series7)
 GENERATE_ARGS?="--oneval 1 --design params.csv --dframe 26 --dword 1"
+else
+DFRAME = 0
+DWORD = 0
+endif
+
 include ../fuzzaddr/common.mk

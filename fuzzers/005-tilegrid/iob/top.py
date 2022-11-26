@@ -14,6 +14,9 @@ random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray.db import Database
 
+ARCH = os.getenv("XRAY_ARCH")
+IOB = 'IOB33S' if ARCH == 'Series7' else 'DIFFS'
+LUT = 'LUT6' if ARCH == 'Series7' else 'LUT4'
 
 def gen_sites():
     '''
@@ -25,11 +28,16 @@ def gen_sites():
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
+        if ARCH == 'Spartan3' and not tile_name.startswith('LIOIS'):
+            continue
+
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
         for site_name, site_type in gridinfo.sites.items():
-            if site_type == 'IOB33S':
+            if site_type == IOB and ( ARCH == 'Series7' or
+                not site_name.startswith("NOPAD")
+            ):
                 yield tile_name, site_name
 
 
@@ -53,7 +61,7 @@ module top(input wire [`N_DI-1:0] di);
     params = {}
     print('''
         (* KEEP, DONT_TOUCH *)
-        LUT6 dummy_lut();''')
+        {} dummy_lut();'''.format(LUT))
 
     for idx, ((tile_name, site_name), isone) in enumerate(zip(
             sites, util.gen_fuzz_states(len(sites)))):
