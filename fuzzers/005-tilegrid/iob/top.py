@@ -55,7 +55,8 @@ def run():
 `define N_DI {}
 
 module top(input wire [`N_DI-1:0] di);
-    wire [`N_DI-1:0] di_buf;
+    (* S *) wire [`N_DI-1:0] di_buf;
+    wire [`N_DI-1:0] di_int = di;
     '''.format(len(sites)))
 
     params = {}
@@ -71,7 +72,7 @@ module top(input wire [`N_DI-1:0] di);
     (* KEEP, DONT_TOUCH *)
     IBUF #(
     ) ibuf_{site_name} (
-        .I(di[{idx}]),
+        .I(di_int[{idx}]),
         .O(di_buf[{idx}])
         );'''.format(site_name=site_name, idx=idx))
 
@@ -79,9 +80,8 @@ module top(input wire [`N_DI-1:0] di);
             print(
                 '''
     (* KEEP, DONT_TOUCH *)
-    PULLUP #(
-    ) pullup_{site_name} (
-        .O(di[{idx}])
+    PULLUP pullup_{site_name} (
+        .O(di_int[{idx}])
         );'''.format(site_name=site_name, idx=idx))
 
     print("endmodule")
