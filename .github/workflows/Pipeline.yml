@@ -13,6 +13,7 @@ jobs:
     container: ubuntu:focal
 
     runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 600
 
     strategy:
       fail-fast: false
@@ -62,7 +63,7 @@ jobs:
       - name: Xilinx Setup
         run: |
           git config --global --add safe.directory /root/prjxray/prjxray
-          .github/workflows/scripts/xilinx.sh
+          .github/scripts/xilinx.sh
         env:
           USE_LICENSE_SERVER: "true"
           XRAY_SETTINGS: ${{ matrix.family }}
@@ -74,7 +75,7 @@ jobs:
         run: make env --output-sync=target --warn-undefined-variables
 
       - name: Run Test
-        run: .github/workflows/scripts/db.sh
+        run: .github/scripts/db.sh
         env:
           XRAY_SETTINGS: ${{ matrix.family }}
 
