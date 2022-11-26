@@ -96,41 +96,43 @@ def run(fn_in, fn_out, verbose=False, arch="Series7"):
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
     int_frames, int_words = localutil.get_int_params()
-    tdb_fns = {
-        "Series7": [
-            ("iob", 42, 4),
-            ("ioi", 42, 4),
-            ("mmcm", 30, 49),
-            ("pll", 30, 27),
-            ("monitor", 30, 101),
-            ("bram", 28, 10),
-            ("bram_block", 128, 10),
-            ("clb", 36, 2),
-            ("cfg", 30, 101),
-            ("dsp", 28, 10),
-            ("clk_hrow", 30, 18),
-            ("clk_bufg", 30, 8),
-            ("hclk_cmt", 30, 10),
-            ("hclk_ioi", 42, 1),
-            ("pcie", 36, 101),
-            ("gtp_common", 32, 101),
-            ("gtp_channel", 32, 22),
-            ("clb_int", int_frames, int_words),
-            ("iob_int", int_frames, int_words),
-            ("bram_int", int_frames, int_words),
-            ("dsp_int", int_frames, int_words),
-            ("fifo_int", int_frames, int_words),
-            ("ps7_int", int_frames, int_words),
-            ("cfg_int", int_frames, int_words),
-            ("monitor_int", int_frames, int_words),
-            ("orphan_int_column", int_frames, int_words),
-            ("gtp_int_interface", int_frames, int_words),
-            ("pcie_int_interface", int_frames, int_words),
-        ],
-        "Spartan3": [
-            ("iob", 2, 4),        #  2 frames, unknown how many words, 4?
-        ],
-    }
+    tdb_fns_Series7 = [
+        ("iob", 42, 4),
+        ("iob18", 42, 4),
+        ("ioi", 42, 4),
+        ("ioi18", 42, 4),
+        ("mmcm", 30, 49),
+        ("pll", 30, 27),
+        ("monitor", 30, 101),
+        ("bram", 28, 10),
+        ("bram_block", 128, 10),
+        ("clb", 36, 2),
+        ("cfg", 30, 101),
+        ("dsp", 28, 10),
+        ("clk_hrow", 30, 18),
+        ("clk_bufg", 30, 8),
+        ("hclk_cmt", 30, 10),
+        ("hclk_ioi", 42, 1),
+        ("pcie", 36, 101),
+        ("gtp_common", 32, 101),
+        ("gtp_channel", 32, 22),
+        ("clb_int", int_frames, int_words),
+        ("iob_int", int_frames, int_words),
+        ("iob18_int", int_frames, int_words),
+        ("bram_int", int_frames, int_words),
+        ("dsp_int", int_frames, int_words),
+        ("fifo_int", int_frames, int_words),
+        ("ps7_int", int_frames, int_words),
+        ("cfg_int", int_frames, int_words),
+        ("monitor_int", int_frames, int_words),
+        ("orphan_int_column", int_frames, int_words),
+        ("gtp_int_interface", int_frames, int_words),
+        ("pcie_int_interface", int_frames, int_words),
+    ]
+    tdb_fns_Spartan3 = [
+       ("iob", 2, 4),        #  2 frames, unknown how many words, 4?
+    ]
+    tdb_fns = {"Series7": tdb_fns_Series7, "Spartan3": tdb_fns_Spartan3}
 
     tile_frames_map = localutil.TileFrames(arch)
     for (subdir, frames, words) in tdb_fns[arch]:
