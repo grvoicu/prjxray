@@ -97,12 +97,12 @@ def propagate_INT_lr_bits(
 
 
 def propagate_INT_bits_in_column(database, tiles_by_grid, tile_frames_map):
-    """ Propigate INT offsets up and down INT columns.
+    """ Propagate INT offsets up and down INT columns.
 
     INT columns appear to be fairly regular, where starting from offset 0,
     INT tiles next to INT tiles increase the word offset by 2.  The HCLK tile
     is surrounded above and sometimes below by an INT tile.  Because the HCLK
-    tile only useds one word, the offset increase by one at the HCLK.
+    tile only uses one word, the offset increase by one at the HCLK.
 
     """
 
@@ -320,10 +320,10 @@ def propagate_INT_INTERFACE_bits_in_column(
 
 
 def propagate_rebuf(database, tiles_by_grid):
-    """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propigate from CLK_HROW tiles.
+    """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propagate from CLK_HROW tiles.
 
     In the clock column, there is a CLK_BUFG_REBUF above and below the CLK_HROW
-    tile.  Each clock column appears to use the same offsets, so propigate
+    tile.  Each clock column appears to use the same offsets, so propagate
     the base address and frame count, and update the offset and word count.
 
     """
