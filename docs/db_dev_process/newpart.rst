@@ -199,7 +199,7 @@ Step 6
 The next task is handling the extra parts – those not fully bonded out.
 These are usually the parts you actually have on the boards you buy.
 
-After the fabric data is generated with step 5, an further target can generate
+After the fabric data is generated with step 5, a further target can generate
 all extra parts for the device.
 
 ::

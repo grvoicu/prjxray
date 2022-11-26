@@ -22,6 +22,7 @@ import signal
 import subprocess
 import sys
 import traceback
+import psutil
 from utils.create_environment import get_environment_variables
 
 import junit_xml
@@ -319,45 +320,8 @@ def mem_convert(s):
     return v
 
 
-def get_memory(memstr=None):
-    r"""
-    >>> import pprint
-    >>> pprint.pprint(get_memory('''\
-    ...               total        used        free      shared  buff/cache   available
-    ... Mem:           62G        19G       4.8G       661M        38G        42G
-    ... Swap:           0B         0B         0B
-    ... '''))
-    {'mem': {'available': 42000000000.0,
-             'buff/cache': 38000000000.0,
-             'free': 4800000000.0,
-             'shared': 661000000.0,
-             'total': 62000000000.0,
-             'used': 19000000000.0},
-     'swap': {'free': 0.0, 'total': 0.0, 'used': 0.0}}
-    """
-    if memstr is None:
-        memstr = subprocess.check_output(
-            'free -mh', shell=True).decode("utf-8")
-
-    lines = [x.split() for x in memstr.strip().splitlines()]
-    lines[0].insert(0, 'type:')
-
-    for l in lines:
-        l[0] = l[0][:-1].lower()
-
-    headers = lines[0][1:]
-    lines = lines[1:]
-
-    memory = {}
-    for l in lines:
-        t, l = l[0], l[1:]
-
-        d = {}
-        for k, v in zip(headers, l):
-            d[k] = mem_convert(v)
-        memory[t] = d
-
-    return memory
+def get_memory():
+    return psutil.virtual_memory()
 
 
 def should_run_submake(make_flags):
@@ -567,13 +531,12 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
 
             if retcode is not None:
                 break
-            mem = get_memory()['mem']
+            mem = get_memory()
             log(
                 "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}% Mem:{:0.1f}Gi used, {:0.1f}Gi free).\n{}",
                 *get_load(),
-                mem['used'] / 1e9,
-                mem['available'] /
-                1e9,  # Using available so the numbers add up.
+                mem.used / 1e9,
+                mem.free / 1e9,  # Using available so the numbers add up.
                 PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):

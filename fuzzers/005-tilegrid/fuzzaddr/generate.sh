@@ -17,6 +17,8 @@ if [ -f $FUZDIR/top.py ] ; then
     XRAY_DATABASE_ROOT=$FUZDIR/../build_${XRAY_PART}/basicdb python3 $FUZDIR/top.py >top.v
 fi
 
+[[ ${XRAY_ARCH} != "Series7" ]] && exit
+
 ${XRAY_VIVADO} -mode batch -source $FUZDIR/generate.tcl
 test -z "$(fgrep CRITICAL vivado.log)"
 

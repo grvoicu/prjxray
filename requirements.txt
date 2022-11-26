@@ -14,6 +14,7 @@ simplejson
 sympy
 textx
 yapf==0.24.0
+psutil
 
 # Third party
 -e third_party/fasm

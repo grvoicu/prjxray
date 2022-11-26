@@ -9,9 +9,11 @@ settings/*/resources.yaml
 **/output
 run.ok
 run.*.ok
+fuzzer_0*.ok
 __pycache__
 *.pyc
 *.swp
+*.egg
 *.egg-info
 *vivado*.jou
 *vivado*.log

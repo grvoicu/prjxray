@@ -1,5 +1,50 @@
-part.yaml: design.perframecrc.bit
-	${XRAY_TOOLS_DIR}/gen_part_base_yaml $< -architecture ${XRAY_ARCH} -f > $@
+ifeq "${XRAY_DATABASE}" "spartan3"
+	FAR_REGS_ARG = ""
+else
+	FAR_REGS_ARG = "-f"
+endif
 
+part.yaml: design.perframecrc.bit
+	${XRAY_TOOLS_DIR}/gen_part_base_yaml $< -architecture ${XRAY_ARCH} ${FAR_REGS_ARG} > $@
+
+ifeq "${XRAY_DATABASE}" "spartan3"
+design.perframecrc.bit: top_par.ncd iobanks.txt
+	${XRAY_ISE_PREFIX}/bitgen.exe -intstyle xflow -d -w -l -b -g Binary:yes -g IEEE1532:yes -g DebugBitstream:yes -g StartupClk:JtagClk $< $@
+
+top_par.ncd: top_map.ncd
+	${XRAY_ISE_PREFIX}/par.exe -w -ol std -intstyle xflow top_map.ncd top_par.ncd top.pcf
+
+top_map.ncd: top.ngd
+	${XRAY_ISE_PREFIX}/map.exe -p ${XRAY_PART} -o top_map.ncd -intstyle xflow top.ngd top.pcf
+
+top.ngd: top.ngc
+	${XRAY_ISE_PREFIX}/ngdbuild.exe -p ${XRAY_PART} -intstyle xflow -nt timestamp -verbose top.ngc top.ngd
+
+top.ngc: top.v top_xst.scr
+	${XRAY_ISE_PREFIX}/xst.exe -intstyle xflow -ifn top_xst.scr
+
+top.v: ../../top_lut4.v
+	cp $< $@
+
+define XST_SCRIPT_BODY
+run
+-ifn top.v
+-ifmt Verilog
+-ofn top
+-ofmt ngc
+-p $(XRAY_PART)
+-verilog2001 YES
+endef
+
+top_xst.scr: export XST_SCRIPT_BODY:=$(XST_SCRIPT_BODY)
+top_xst.scr:
+	echo "$${XST_SCRIPT_BODY}" > $@
+
+# TODO: Use ISE to generate iobanks.txt
+iobanks.txt: ../../spartan3_iobanks.txt
+	cp $< $@
+
+else
 design.bit design.perframecrc.bit: ../../generate.tcl
 	${XRAY_VIVADO} -mode batch -source ../../generate.tcl
+endif

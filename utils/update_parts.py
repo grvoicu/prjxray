@@ -30,7 +30,7 @@ def main():
     parser.add_argument(
         'family',
         help="Name of the device family.",
-        choices=['artix7', 'kintex7', 'zynq7', 'spartan7'])
+        choices=['artix7', 'kintex7', 'zynq7', 'spartan7', 'spartan3'])
     util.db_root_arg(parser)
 
     args = parser.parse_args()
@@ -44,15 +44,22 @@ def main():
     supported_devices = util.get_devices(args.db_root).keys()
 
     # Fetch all parts for a family (FILTER = family)
-    command = "{} -mode batch -source update_parts.tcl".format(
-        env['XRAY_VIVADO'])
-    result = subprocess.run(
-        command.split(' '),
-        check=True,
-        env=env,
-        cwd=cwd,
-        stdout=subprocess.PIPE)
-    parts = result.stdout.decode('utf-8').split('# }\n')[1].splitlines()[:-1]
+    if args.family in ["spartan3"]:
+        #TODO: Use partgen -v|-p spartan3e to generate this
+        parts = [
+            "xc3s1200efg320-4,xc3s1200e,fg320,-4",
+            "xc3s1200efg320-5,xc3s1200e,fg320,-5",
+        ]
+    else:
+        command = "{} -mode batch -source update_parts.tcl".format(
+            env['XRAY_VIVADO'])
+        result = subprocess.run(
+            command.split(' '),
+            check=True,
+            env=env,
+            cwd=cwd,
+            stdout=subprocess.PIPE)
+        parts = result.stdout.decode('utf-8').split('# }\n')[1].splitlines()[:-1]
 
     # Splits up the part number and checks if the device is supported
     for part in parts:
@@ -66,7 +73,7 @@ def main():
         else:
             print("Part {} has an unsupported device {}".format(part, device))
 
-    # Overwrites the <family>/parts.yaml file completly with new data
+    # Overwrites the <family>/parts.yaml file completely with new data
     util.set_part_information(args.db_root, information)
 
 

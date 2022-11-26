@@ -97,12 +97,12 @@ def propagate_INT_lr_bits(
 
 
 def propagate_INT_bits_in_column(database, tiles_by_grid, tile_frames_map):
-    """ Propigate INT offsets up and down INT columns.
+    """ Propagate INT offsets up and down INT columns.
 
     INT columns appear to be fairly regular, where starting from offset 0,
     INT tiles next to INT tiles increase the word offset by 2.  The HCLK tile
     is surrounded above and sometimes below by an INT tile.  Because the HCLK
-    tile only useds one word, the offset increase by one at the HCLK.
+    tile only uses one word, the offset increase by one at the HCLK.
 
     """
 
@@ -320,10 +320,10 @@ def propagate_INT_INTERFACE_bits_in_column(
 
 
 def propagate_rebuf(database, tiles_by_grid):
-    """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propigate from CLK_HROW tiles.
+    """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propagate from CLK_HROW tiles.
 
     In the clock column, there is a CLK_BUFG_REBUF above and below the CLK_HROW
-    tile.  Each clock column appears to use the same offsets, so propigate
+    tile.  Each clock column appears to use the same offsets, so propagate
     the base address and frame count, and update the offset and word count.
 
     """
@@ -508,6 +508,9 @@ def propagate_IOI_Y9(database, tiles_by_grid):
     tiles = ioi_tiles.split(" ")
 
     for tile in tiles:
+        if not tile:
+            continue
+
         prev_tile = tiles_by_grid[(
             database[tile]['grid_x'], database[tile]['grid_y'] - 1)]
         while database[prev_tile]["type"] != database[tile]["type"]:
@@ -545,12 +548,12 @@ def alias_HCLKs(database):
             }
 
 
-def run(json_in_fn, json_out_fn, verbose=False):
+def run(json_in_fn, json_out_fn, arch, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
     tiles_by_grid = make_tiles_by_grid(database)
 
-    tile_frames_map = localutil.TileFrames()
+    tile_frames_map = localutil.TileFrames(arch)
     propagate_INT_lr_bits(
         database, tiles_by_grid, tile_frames_map, verbose=verbose)
     propagate_INT_bits_in_column(database, tiles_by_grid, tile_frames_map)
@@ -576,6 +579,12 @@ def main():
 
     parser.add_argument("--verbose", action="store_true", help="")
     parser.add_argument(
+        "--architecture",
+        choices=["Series7", "Spartan3"],
+        default="Series7",
+        help="Bitstream architecture: Series7 or Spartan3.",
+    )
+    parser.add_argument(
         "--json-in",
         default="tiles_basic.json",
         help="Input .json without addresses")
@@ -583,7 +592,7 @@ def main():
         "--json-out", default="tilegrid.json", help="Output JSON")
     args = parser.parse_args()
 
-    run(args.json_in, args.json_out, verbose=args.verbose)
+    run(args.json_in, args.json_out, args.architecture, verbose=args.verbose)
 
 
 if __name__ == "__main__":

@@ -45,6 +45,7 @@ export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
 export XRAY_PARSEDB="python3 ${XRAY_UTILS_DIR}/parsedb.py"
 export XRAY_TCL_REFORMAT="${XRAY_UTILS_DIR}/tcl-reformat.sh"
 export XRAY_VIVADO="${XRAY_UTILS_DIR}/vivado.sh"
+export XRAY_ISE_PREFIX="WINEDEBUG=fixme-heap,fixme-msvcrt,fixme-service,err-ntoskrnl,fixme-ntdll WINEPREFIX=/Users/ge/WinApps/Xilinx.app/Contents/SharedSupport/prefix /Users/ge/WinApps/Xilinx.app/Contents/SharedSupport/wine/bin/wine64 /Users/ge/WinApps/Xilinx.app/drive_c/Xilinx/14.7/ISE_DS/ISE/bin/nt64"
 
 # Verify an approved version is in use
 export XRAY_VIVADO_SETTINGS="${XRAY_VIVADO_SETTINGS:-/opt/Xilinx/Vivado/2017.2/settings64.sh}"
