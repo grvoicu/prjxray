@@ -159,6 +159,7 @@ gtp_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 
 $(BUILD_FOLDER)/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
+		--architecture ${XRAY_ARCH} \
 		--fn-in ${BASICDB_TILEGRID} \
 		--fn-out $(BUILD_FOLDER)/tilegrid_tdb.json
 
