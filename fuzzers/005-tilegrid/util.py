@@ -126,7 +126,7 @@ def add_tile_bits(
 
     # FDRI address
     block["baseaddr"] = baseaddr_str
-    # Number of frames this entry is sretched across
+    # Number of frames this entry is stretched across
     # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
     block["frames"] = frames
 
