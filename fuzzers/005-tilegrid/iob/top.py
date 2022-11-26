@@ -69,7 +69,7 @@ module top(input wire [`N_DI-1:0] di);
         params[tile_name] = (site_name, isone, "di[%u]" % idx)
         print(
             '''
-    (* KEEP, DONT_TOUCH *)
+    (* KEEP, DONT_TOUCH, LOC = "{site_name}" *)
     IBUF #(
     ) ibuf_{site_name} (
         .I(di_int[{idx}]),
