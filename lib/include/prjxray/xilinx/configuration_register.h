@@ -15,6 +15,27 @@
 namespace prjxray {
 namespace xilinx {
 
+// TODO: Add support for Spartan 3A, UG332, pg. 323
+
+// Spartan3 configuration register addresses
+// according to XAPP452, pg. 2
+enum class Spartan3ConfigurationRegister : unsigned int {
+  CRC = 0x00,
+  FAR = 0x01,
+  FDRI = 0x02,
+  FDRO = 0x03,
+  CMD = 0x04,
+  CTL = 0x05,
+  CTL1 = 0x05,
+  MASK = 0x06,
+  STAT = 0x07,
+  LOUT = 0x08,
+  COR = 0x09,
+  MFWR = 0x0a,
+  FLR = 0x0b,
+  IDCODE = 0x0e,
+};
+
 // Spartan6 configuration register addresses
 // according to UG380, pg. 100
 enum class Spartan6ConfigurationRegister : unsigned int {
@@ -82,6 +103,8 @@ enum class Series7ConfigurationRegister : unsigned int {
 	BSPI = 0x1F,
 };
 
+std::ostream &operator<<(std::ostream &o,
+                         const Spartan3ConfigurationRegister &value);
 std::ostream& operator<<(std::ostream& o,
                          const Spartan6ConfigurationRegister& value);
 std::ostream& operator<<(std::ostream& o,

@@ -13,6 +13,38 @@ namespace prjxray {
 namespace xilinx {
 
 std::ostream& operator<<(std::ostream& o,
+                         const Spartan3ConfigurationRegister& value) {
+	switch (value) {
+		case Spartan3ConfigurationRegister::CRC:
+			return o << "CRC";
+		case Spartan3ConfigurationRegister::FAR:
+			return o << "Frame Address";
+		case Spartan3ConfigurationRegister::FDRI:
+			return o << "Frame Data Input";
+		case Spartan3ConfigurationRegister::FDRO:
+			return o << "Frame Data Output";
+		case Spartan3ConfigurationRegister::CMD:
+			return o << "Command";
+		case Spartan3ConfigurationRegister::CTL:
+			return o << "Control";
+		case Spartan3ConfigurationRegister::MASK:
+			return o << "Mask for CTL";
+		case Spartan3ConfigurationRegister::STAT:
+			return o << "Status";
+		case Spartan3ConfigurationRegister::LOUT:
+			return o << "Legacy Output";
+		case Spartan3ConfigurationRegister::COR:
+			return o << "Configuration Option";
+		case Spartan3ConfigurationRegister::MFWR:
+			return o << "Multiple Frame Write";
+		case Spartan3ConfigurationRegister::IDCODE:
+			return o << "Device ID";
+		default:
+			return o << "Unknown";
+	}
+}
+
+std::ostream& operator<<(std::ostream& o,
                          const Spartan6ConfigurationRegister& value) {
 	switch (value) {
 		case Spartan6ConfigurationRegister::CRC:

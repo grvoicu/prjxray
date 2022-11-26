@@ -14,17 +14,21 @@ import json
 import util as localutil
 import os.path
 
+BASEADDR_MASK = {
+    "Series7": 0x80,
+    "Spartan3": 0x20000,
+}
 
-def check_frames(tagstr, addrlist):
+def check_frames(tagstr, addrlist, baseaddr_mask):
     frames = set()
     for addrstr in addrlist:
-        frame = parse_addr(addrstr, get_base_frame=True)
+        frame = parse_addr(addrstr, baseaddr_mask, get_base_frame=True)
         frames.add(frame)
     assert len(frames) == 1, (
         "{}: More than one base address".format(tagstr), map(hex, frames))
 
 
-def parse_addr(line, only_frame=False, get_base_frame=False):
+def parse_addr(line, baseaddr_mask, only_frame=False, get_base_frame=False):
     # 00020027_003_03
     line = line.split("_")
     frame = int(line[0], 16)
@@ -32,14 +36,14 @@ def parse_addr(line, only_frame=False, get_base_frame=False):
     bitidx = int(line[2], 10)
 
     if get_base_frame:
-        delta = frame % 128
+        delta = frame % baseaddr_mask
         frame -= delta
         return frame
 
     return frame, wordidx, bitidx
 
 
-def load_db(fn):
+def load_db(fn, baseaddr_mask):
     for l in open(fn, "r"):
         l = l.strip()
         # FIXME: add offset to name
@@ -48,9 +52,9 @@ def load_db(fn):
         tagstr = parts[0]
         addrlist = parts[1:]
         assert not any(s == '<const0>' for s in addrlist), (fn, l)
-        check_frames(tagstr, addrlist)
+        check_frames(tagstr, addrlist, baseaddr_mask)
         # Take the first address in the list
-        frame, wordidx, bitidx = parse_addr(addrlist[0])
+        frame, wordidx, bitidx = parse_addr(addrlist[0], baseaddr_mask)
 
         bitidx_up = False
 
@@ -60,7 +64,7 @@ def load_db(fn):
         for part in tparts[1:]:
             # Auto align the frame address to the next lowest multiple of 0x80.
             if part == 'AUTO_FRAME':
-                frame -= (frame % 0x80)
+                frame -= (frame % baseaddr_mask)
                 continue
 
             k, v = part.split(':')
@@ -79,20 +83,20 @@ def load_db(fn):
         if not bitidx_up:
             bitidx = 0
         assert bitidx == 0, l
-        assert frame % 0x80 == 0, "Unaligned frame at 0x%08X" % frame
+        assert frame % baseaddr_mask == 0, "Unaligned frame at 0x%08X" % frame
         yield (tile, frame, wordidx)
 
 
-def run(fn_in, fn_out, verbose=False):
+def run(fn_in, fn_out, verbose=False, arch="Series7"):
     database = json.load(open(fn_in, "r"))
 
     # Load a map of sites to base addresses
     # Need to figure out the
-    # FIXME: generate frames from part file (or equivilent)
+    # FIXME: generate frames from part file (or equivalent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
     int_frames, int_words = localutil.get_int_params()
-    tdb_fns = [
+    tdb_fns_Series7 = [
         ("iob", 42, 4),
         ("iob18", 42, 4),
         ("ioi", 42, 4),
@@ -125,9 +129,13 @@ def run(fn_in, fn_out, verbose=False):
         ("gtp_int_interface", int_frames, int_words),
         ("pcie_int_interface", int_frames, int_words),
     ]
+    tdb_fns_Spartan3 = [
+        ("iob", 2, 4),        #  2 frames, unknown how many words, 4?
+    ]
+    tdb_fns = {"Series7": tdb_fns_Series7, "Spartan3": tdb_fns_Spartan3}
 
-    tile_frames_map = localutil.TileFrames()
-    for (subdir, frames, words) in tdb_fns:
+    tile_frames_map = localutil.TileFrames(arch)
+    for (subdir, frames, words) in tdb_fns[arch]:
         tdb_fn = os.path.join(
             subdir, 'build_{}'.format(os.environ['XRAY_PART']),
             'segbits_tilegrid.tdb')
@@ -135,7 +143,7 @@ def run(fn_in, fn_out, verbose=False):
             verbose and print('Skipping {}, file not found!'.format(tdb_fn))
             continue
 
-        for (tile, frame, wordidx) in load_db(tdb_fn):
+        for (tile, frame, wordidx) in load_db(tdb_fn, BASEADDR_MASK[arch]):
             tilej = database[tile]
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
             localutil.add_tile_bits(
@@ -150,12 +158,18 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="Annotate tilegrid addresses using solved base addresses")
+    parser.add_argument(
+        "--architecture",
+        choices=["Series7", "Spartan3"],
+        default="Series7",
+        help="Bitstream architecture: Series7 or Spartan3.",
+    )
     parser.add_argument("--verbose", action="store_true", help="")
     parser.add_argument("--fn-in", required=True, help="")
     parser.add_argument("--fn-out", required=True, help="")
     args = parser.parse_args()
 
-    run(args.fn_in, args.fn_out, verbose=args.verbose)
+    run(args.fn_in, args.fn_out, verbose=args.verbose, arch=args.architecture)
 
 
 if __name__ == "__main__":

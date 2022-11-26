@@ -38,7 +38,7 @@ class Configuration {
 
 	// Creates the complete configuration package which is later on
 	// used by the bitstream writer to generate the bitstream file.
-	// The pacakge forms a sequence suitable for Xilinx devices.
+	// The package forms a sequence suitable for Xilinx devices.
 	// The programming sequence for Series-7 is taken from
 	// https://www.kc8apf.net/2018/05/unpacking-xilinx-7-series-bitstreams-part-2/
 	static void createConfigurationPackage(
@@ -102,6 +102,99 @@ Configuration<ArchType>::createType2ConfigurationPacketData(
 	}
 	packet_data.insert(packet_data.end(), kZeroFramesSeparatorWords, 0);
 	return packet_data;
+}
+
+template <>
+template <typename Collection>
+absl::optional<Configuration<Spartan3>>
+Configuration<Spartan3>::InitWithPackets(const typename Spartan3::Part& part,
+                                         Collection& packets) {
+	using ArchType = Spartan3;
+
+	// Registers that can be directly written to.
+	uint32_t command_register = 0;
+	uint32_t frame_address_register = 0;
+
+	// Internal state machine for writes.
+	bool start_new_write = false;
+	bool last_frame = false;
+	typename ArchType::FrameAddress current_frame_address = 0;
+
+	Configuration<ArchType>::FrameMap frames;
+	for (auto packet : packets) {
+		if (packet.opcode() !=
+		    ConfigurationPacket<
+		        typename ArchType::ConfRegType>::Opcode::Write) {
+			continue;
+		}
+
+		switch (packet.address()) {
+			case ArchType::ConfRegType::CMD:
+				if (packet.data().size() < 1)
+					continue;
+				command_register = packet.data()[0];
+				// Writes to CMD trigger an immediate action. In
+				// the case of WCFG, that is just setting a flag
+				// for the next FDIR.
+				if (command_register == 0x1) {
+					start_new_write = true;
+				}
+				break;
+			case ArchType::ConfRegType::IDCODE:
+				// This really should be a one-word write.
+				if (packet.data().size() < 1)
+					continue;
+
+				// If the IDCODE doesn't match our expected
+				// part, consider the bitstream invalid.
+				if (packet.data()[0] != part.idcode()) {
+					return {};
+				}
+				break;
+			case ArchType::ConfRegType::FAR:
+				// This really should be a one-word write.
+				if (packet.data().size() < 1)
+					continue;
+				frame_address_register = packet.data()[0];
+				break;
+			case ArchType::ConfRegType::FDRI: {
+				if (start_new_write) {
+					current_frame_address =
+					    frame_address_register;
+					start_new_write = false;
+				}
+
+				// Number of words in configuration frames
+				// depend on the architecture.  Writes to this
+				// register can be multiples of that number to
+				// do auto-incrementing block writes.
+				for (size_t ii = 0; ii < packet.data().size();
+				     ii += ArchType::words_per_frame) {
+					// XAPP425, pg.3 states that the last frame is a pad frame
+					// with dummy data, so we ignore it.
+					if (last_frame)
+						break;
+
+					frames[current_frame_address] = packet.data().subspan(
+						ii, ArchType::words_per_frame);
+
+					auto next_address =
+					    part.GetNextFrameAddress(current_frame_address);
+					if (!next_address) {
+						last_frame = true;
+						break;
+					}
+					
+					current_frame_address = *next_address;
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	return Configuration(part, frames);
 }
 
 template <>
@@ -293,7 +386,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 
 				// Per UG470, the command present in the CMD
 				// register is executed each time the FAR
-				// register is laoded with a new value.  As we
+				// register is loaded with a new value.  As we
 				// only care about WCFG commands, just check
 				// that here.  CTRL1 is completely undocumented
 				// but looking at generated bitstreams, bit 21
@@ -317,7 +410,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 				}
 
 				// Number of words in configuration frames
-				// depend on tje architecture.  Writes to this
+				// depend on the architecture.  Writes to this
 				// register can be multiples of that number to
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();

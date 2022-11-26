@@ -136,7 +136,7 @@ check-license:
 # Targets related to Project X-Ray databases
 # ------------------------
 
-DATABASES=artix7 kintex7 zynq7 spartan7
+DATABASES=spartan3 artix7 kintex7 zynq7 spartan7
 
 define database
 

@@ -7,6 +7,15 @@ add_library(libprjxray
 	xilinx/configuration_register.cc
 	xilinx/configuration.cc
 	xilinx/frames.cc
+	# Spartan3 specific
+	xilinx/spartan3/frame_address.cc
+	xilinx/spartan3/global_clock_region.cc
+	xilinx/spartan3/part.cc
+	xilinx/spartan3/configuration_row.cc
+	xilinx/spartan3/block_type.cc
+	xilinx/spartan3/configuration_bus.cc
+	xilinx/spartan3/configuration_column.cc
+	xilinx/spartan3/ecc.cc
 	# Spartan6 specific
 	xilinx/spartan6/frame_address.cc
 	xilinx/spartan6/global_clock_region.cc

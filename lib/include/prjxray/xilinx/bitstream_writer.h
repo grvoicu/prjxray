@@ -36,6 +36,8 @@ uint32_t packet2header(
     const ConfigurationPacket<Series7ConfigurationRegister>& packet);
 uint32_t packet2header(
     const ConfigurationPacket<Spartan6ConfigurationRegister>& packet);
+uint32_t packet2header(
+	const ConfigurationPacket<Spartan3ConfigurationRegister> &packet);
 // Writes out the complete Xilinx bitstream including
 // header, sync word and configuration sequence.
 template <typename ArchType>
@@ -155,7 +157,7 @@ int BitstreamWriter<ArchType>::writeBitstream(
     const std::string& output_file) {
 	std::ofstream out_file(output_file, std::ofstream::binary);
 	if (!out_file) {
-		std::cerr << "Unable to open file for writting: " << output_file
+		std::cerr << "Unable to open file for writing: " << output_file
 		          << std::endl;
 		return 1;
 	}

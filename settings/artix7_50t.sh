@@ -5,6 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+export XRAY_ARCH="Series7"
 export XRAY_DATABASE="artix7"
 export XRAY_PART="xc7a50tfgg484-1"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"

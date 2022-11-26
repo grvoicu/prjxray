@@ -15,6 +15,8 @@
 #include <vector>
 
 #include <prjxray/xilinx/configuration_packet.h>
+#include <prjxray/xilinx/spartan3/frame_address.h>
+#include <prjxray/xilinx/spartan3/part.h>
 #include <prjxray/xilinx/spartan6/frame_address.h>
 #include <prjxray/xilinx/spartan6/part.h>
 #include <prjxray/xilinx/xc7series/frame_address.h>
@@ -23,6 +25,7 @@
 namespace prjxray {
 namespace xilinx {
 
+class Spartan3;
 class Spartan6;
 class Series7;
 class UltraScale;
@@ -31,13 +34,27 @@ class UltraScalePlus;
 class Architecture {
        public:
 	using Container =
-	    absl::variant<Series7, UltraScale, UltraScalePlus, Spartan6>;
+	    absl::variant<Series7, UltraScale, UltraScalePlus, Spartan6, Spartan3>;
 	Architecture(const std::string& name) : name_(name) {}
 	const std::string& name() const { return name_; }
 	virtual ~Architecture() {}
 
        private:
 	const std::string name_;
+};
+
+class Spartan3 : public Architecture {
+public:
+  using ConfRegType = Spartan3ConfigurationRegister;
+  using Part = spartan3::Part;
+  using ConfigurationPackage =
+      std::vector<std::unique_ptr<ConfigurationPacket<ConfRegType>>>;
+  using FrameAddress = spartan3::FrameAddress;
+  using WordType = uint32_t;
+  Spartan3() : Architecture("Spartan3") {}
+  // TODO: Set words_per_frame for all Spartan3 parts, 125 is for Spartan3E-1200
+  // According to UG332 pg. 40
+  static constexpr int words_per_frame = 125;
 };
 
 class Spartan6 : public Architecture {
@@ -81,7 +98,9 @@ class ArchitectureFactory {
        public:
 	static Architecture::Container create_architecture(
 	    const std::string& arch) {
-		if (arch == "Spartan6") {
+		if (arch == "Spartan3") {
+			return Spartan3();
+		} else if (arch == "Spartan6") {
 			return Spartan6();
 		} else if (arch == "Series7") {
 			return Series7();

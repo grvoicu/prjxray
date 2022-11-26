@@ -12,8 +12,15 @@ PRJ=$2
 export FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
-${XRAY_VIVADO} -mode batch -source $FUZDIR/generate_$PRJ.tcl
-test -z "$(fgrep CRITICAL vivado.log)"
+if [ $XRAY_DATABASE == "spartan3" ]; then
+    #TODO: Generate tiles.txt from xdl file (with xdl.exe -report). It was generated from RapidSmith.
+	cp ../../spartan3_tiles.txt tiles.txt
+    #TODO: Auto-generate pin_func.txt. Currently it is empty.
+    cp ../../spartan3_pin_func.txt pin_func.txt
+else
+    ${XRAY_VIVADO} -mode batch -source $FUZDIR/generate_$PRJ.tcl
+    test -z "$(fgrep CRITICAL vivado.log)"
+fi
 
 if [ $PRJ != "tiles" ] ; then
     for x in design*.bit; do
