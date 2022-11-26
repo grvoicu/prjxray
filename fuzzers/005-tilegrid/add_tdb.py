@@ -130,7 +130,7 @@ def run(fn_in, fn_out, verbose=False, arch="Series7"):
         ("pcie_int_interface", int_frames, int_words),
     ]
     tdb_fns_Spartan3 = [
-       ("iob", 2, 4),        #  2 frames, unknown how many words, 4?
+        ("iob", 2, 4),        #  2 frames, unknown how many words, 4?
     ]
     tdb_fns = {"Series7": tdb_fns_Series7, "Spartan3": tdb_fns_Spartan3}
 
