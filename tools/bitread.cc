@@ -64,8 +64,6 @@ namespace xilinx = prjxray::xilinx;
 std::set<uint32_t> frames;
 uint32_t frame_range_begin = 0, frame_range_end = 0;
 
-std::vector<uint32_t> zero_frame(101);
-
 struct BitReader {
 	BitReader(const std::vector<uint8_t>& bytes) : bytes_(bytes) {}
 
@@ -142,6 +140,8 @@ struct BitReader {
 		std::vector<int> pgmsep;
 
 		int word_length = sizeof(typename ArchType::WordType) * 8;
+		
+		std::vector<uint32_t> zero_frame(ArchType::words_per_frame);
 		for (auto& it : config->frames()) {
 			if (FLAGS_z && it.second == zero_frame)
 				continue;

@@ -23,14 +23,42 @@ class TileFrames:
     with the specified baseaddress using the information from the part's json file
     """
 
-    def __init__(self):
+    def __init__(self, arch='Series7'):
         self.tile_address_to_frames = dict()
+        if arch == 'Series7':
+            self.block_types = {
+                'CLB_IO_CLK': 0,
+                'BLOCK_RAM': 1,
+                # 'CFG_CLB': 2,
+            }
+            self.row_offset = 17
+            self.column_offset = 7
+            self.region_offset = 22
+            self.type_offset = 23
+            self.words_per_frame = 101
+        elif arch == 'Spartan3':
+            self.block_types = {
+                'TERM_IOI_CLB_GCLK': 0,
+                'BLOCK_RAM': 1,
+                'BLOCK_RAM_INT': 2,
+            }
+            # Spartan3 has no rows and region, there will always be set to 0.
+            # FAR[8:0] is always 0, so we can use bit 0 for rows and region offset.
+            self.row_offset = 0  
+            self.column_offset = 17
+            self.region_offset = 0
+            self.type_offset = 25
+            #TODO: Set words_per_frame for other parts
+            print(os.getenv('XRAY_PART'))
+            self.words_per_frame = 125
+        else:
+            assert 1, f'Incorrect architecture: {arch}'
 
     def get_baseaddress(self, region, bus, row, column):
-        assert bus == 'BLOCK_RAM' or bus == 'CLB_IO_CLK', 'Incorrect block type'
-        address = (row << 17) + (column << 7) + (
-            (1 << 22) if region == 'bottom' else 0) + (
-                (1 << 23) if bus == 'BLOCK_RAM' else 0)
+        assert bus in self.block_types, f'Incorrect block type: {bus}'
+        address = (row << self.row_offset) + (column << self.column_offset) + \
+            ((1 << self.region_offset) if region == 'bottom' else 0) + \
+            (self.block_types[bus] << self.type_offset)
         return address
 
     def initialize_address_to_frames(self):
@@ -51,7 +79,7 @@ class TileFrames:
     def get_tile_frames(self, baseaddress):
         if len(self.tile_address_to_frames) == 0:
             self.initialize_address_to_frames()
-        assert baseaddress in self.tile_address_to_frames, "Base address not found in the part's json file"
+        assert baseaddress in self.tile_address_to_frames, f"Base address not found in the part's json file: {baseaddress}"
         return self.tile_address_to_frames[baseaddress]
 
 
@@ -103,19 +131,19 @@ def add_tile_bits(
     if frames is None:
         frames = max_frames
 
-    assert offset <= 100, (tile_name, offset)
+    assert offset < tile_frames.words_per_frame, (tile_name, offset)
     # Few rare cases at X=0 for double width tiles split in half => small negative offset
     assert offset >= 0 or "IOB" in tile_name, (
         tile_name, hex(baseaddr), offset)
-    assert 1 <= words <= 101, words
-    assert offset + words <= 101, (
+    assert 1 <= words <= tile_frames.words_per_frame, words
+    assert offset + words <= tile_frames.words_per_frame, (
         tile_name, offset + words, offset, words, block_type)
 
     baseaddr_str = '0x%08X' % baseaddr
     block = bits.get(block_type, None)
     if block is not None:
         verbose and print(
-            "%s: existing defintion for %s" % (tile_name, block_type))
+            "%s: existing definition for %s" % (tile_name, block_type))
         assert block["baseaddr"] == baseaddr_str
         assert block["frames"] == frames, (block, frames)
         assert block["offset"] == offset, "%s; orig offset %s, new %s" % (
