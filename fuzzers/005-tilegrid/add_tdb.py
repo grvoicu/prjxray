@@ -92,7 +92,7 @@ def run(fn_in, fn_out, verbose=False, arch="Series7"):
 
     # Load a map of sites to base addresses
     # Need to figure out the
-    # FIXME: generate frames from part file (or equivilent)
+    # FIXME: generate frames from part file (or equivalent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
     int_frames, int_words = localutil.get_int_params()
