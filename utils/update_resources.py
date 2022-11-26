@@ -89,7 +89,7 @@ def main():
         information[part] = {'pins': pins}
         processed_parts[common_part] = {'pins': pins}
 
-    # Overwrites the <family>/resources.yaml file completly with new data
+    # Overwrites the <family>/resources.yaml file completely with new data
     set_part_resources(resource_path, information)
 
 

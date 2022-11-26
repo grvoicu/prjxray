@@ -44,7 +44,7 @@ DEFINE_bool(x,
             "  - word index with that frame (decimal)\n"
             "  - bit index with that word (decimal)\n"
             "  - decoded frame type from frame id\n"
-            "  - decoded top/botttom from frame id (top=0)\n"
+            "  - decoded top/bottom from frame id (top=0)\n"
             "  - decoded row address from frame id\n"
             "  - decoded column address from frame id\n"
             "  - decoded minor address from frame id\n");
